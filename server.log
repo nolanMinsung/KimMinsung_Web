@@ -1,8 +1,2 @@
 [알림] 기존 data.json 파일을 발견했습니다.
-Server is running on http://localhost:3000
---- 현재 투표 현황 ---
-{
-  "jjajang": 0,
-  "jjamppong": 0
-}
-----------------------
+Server is running on http://localhost:3000/vote
