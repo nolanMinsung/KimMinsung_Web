@@ -110,10 +110,29 @@ app.post('/vote', (req, res) => {
     writeData(data);
 
     // 4. 쿠키 설정 (유효기간 1시간 = 3600000ms)
-    res.cookie('voted', 'true', { maxAge: 60 * 60 * 1000, httpOnly: true });
+    // 'true' 대신 사용자가 선택한 메뉴(item)를 저장하여 추후 '표 바꾸기' 시 사용
+    res.cookie('voted', item, { maxAge: 60 * 60 * 1000, httpOnly: true });
 
     // 5. 결과 페이지로 리다이렉트
     res.redirect('/result');
+});
+
+// 2-1. GET /reset: 표 철회 및 초기화
+app.get('/reset', (req, res) => {
+    const oldMenu = req.cookies.voted; // 예: 'jjajang' or 'jjamppong'
+
+    // 이전에 투표한 기록이 있다면 표를 회수
+    if (oldMenu && (oldMenu === 'jjajang' || oldMenu === 'jjamppong')) {
+        const data = readData();
+        if (data[oldMenu] > 0) { // 음수 방지
+            data[oldMenu] -= 1;
+            writeData(data);
+            console.log(`[표 철회] ${oldMenu} 표가 취소되었습니다.`);
+        }
+    }
+
+    res.clearCookie('voted');
+    res.redirect('/vote');
 });
 
 // 3. GET /result: 결과 페이지
@@ -134,7 +153,7 @@ app.get('/result', (req, res) => {
                 <p>짬뽕 🔴 : <strong>${data.jjamppong}</strong> 표</p>
             </div>
             <hr style="width: 50%; margin: 30px auto;">
-            <a href="/vote" style="font-size: 1.2rem; text-decoration: none; color: blue;">↩️ 다시 투표하기</a>
+            <a href="/reset" style="font-size: 1.2rem; text-decoration: none; color: blue;">↩️ 선택 변경하기 (다시 투표)</a>
         </body>
         </html>
     `;
